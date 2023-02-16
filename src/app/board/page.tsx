@@ -35,8 +35,22 @@ export default function Board() {
      */
 
     const updateScene = () => {
-        if (excalidrawAPI !== null) {
+        if (excalidrawAPI !== null && jsonData !== null) {
+            let filesInScene: any[] = [];
+            const jsonFiles: any = jsonData["files"];
+
+            for (const fileId in jsonFiles) {
+                filesInScene.push(jsonData["files"][fileId]);
+            }
+
             excalidrawAPI.updateScene(jsonData);
+            excalidrawAPI.addFiles(filesInScene);
+
+            // console.log(
+            //     "aaaa",
+            //     jsonData["files"]["17c63251d93085247b060fdb3ed3f07d4a48927f"]
+            // );
+            // console.log("bbb", filesInScene);
         }
     };
 
