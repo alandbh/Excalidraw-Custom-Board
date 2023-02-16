@@ -20,7 +20,7 @@ export default function Board() {
     }, []);
 
     useEffect(() => {
-        fetch("http://localhost:3000/api/scene").then((data) => {
+        fetch("/api/scene").then((data) => {
             data.json().then((dataJson) => {
                 setJsonData(dataJson);
             });
