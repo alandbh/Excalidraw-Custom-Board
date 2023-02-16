@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import jsonData from "./exd2.json"
+import jsonData from "./scene-with-shapes-and-images.json"
 
 console.log(jsonData);
 
