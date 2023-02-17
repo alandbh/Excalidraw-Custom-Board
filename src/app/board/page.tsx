@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import fetchAPI from "@/utils/graph";
 
 type stateComp = React.MemoExoticComponent<any> | null;
 
@@ -20,10 +21,30 @@ export default function Board() {
     }, []);
 
     useEffect(() => {
-        fetch("/api/scene").then((data) => {
-            data.json().then((dataJson) => {
-                setJsonData(dataJson);
-            });
+        // fetch("/api/scene").then((data) => {
+        //     data.json().then((dataJson) => {
+        //         setJsonData(dataJson);
+        //     });
+        // });
+
+        fetchAPI(
+            `query MyQuery($playerSlug:String, $projectSlug:String) {
+                drawings(where: {player: {slug: $playerSlug}, project: {slug: $projectSlug}}) {
+                  id
+                  title
+                  slug
+                  sceneObject
+                }
+              }`,
+            {
+                variables: {
+                    playerSlug: "claro",
+                    projectSlug: "telco-10",
+                },
+            }
+        ).then((data) => {
+            setJsonData(data.drawings[0].sceneObject);
+            // console.log(data.drawings[0])
         });
     }, []);
 
@@ -153,7 +174,7 @@ export default function Board() {
                         currentItemFillStyle: "solid",
                         currentItemRoughness: 0,
                     }}
-                    zenModeEnabled={true}
+                    // zenModeEnabled={true}
                     UIOptions={UIOptions}
                     zoom={{ value: 0.3399902343750002 }}
                 />
