@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { serializeAsJSON } from "@excalidraw/excalidraw";
 import fetchAPI from "@/utils/graph";
 
 type stateComp = React.MemoExoticComponent<any> | null;
@@ -27,8 +28,11 @@ export default function Board() {
         //     });
         // });
         if (excalidrawAPI) {
-            const updateScene = (sceneObj: SceneObj) => {
-                const sceneObject = sceneObj;
+            const updateScene = (sceneObj: string | object) => {
+                const sceneObject =
+                    typeof sceneObj === "string"
+                        ? JSON.parse(sceneObj)
+                        : sceneObj;
 
                 if (excalidrawAPI !== null && sceneObject !== null) {
                     let filesInScene: object[] = [];
@@ -75,12 +79,59 @@ export default function Board() {
      * ----------------------------------------------------------------
      */
 
-    function saveToBackend(
-        excalidrawElements: object[],
-        appState: {},
-        files: any
-    ) {
-        console.log("back", appState);
+    function saveToBackend() {
+        const json = serializeAsJSON(
+            excalidrawAPI.getSceneElements(),
+            excalidrawAPI.getAppState(),
+            excalidrawAPI.getFiles(),
+            "local"
+        );
+
+        doMutate(
+            `mutation MyMutation($json: Json) {
+            updateDrawing(
+              where: {id: "cle8x88jd3qti0blrt5pac2uz"}
+              data: {sceneObject: $json}
+            ) {
+              id
+              title
+            }
+          }`,
+            {
+                variables: {
+                    json,
+                },
+            }
+        );
+
+        // console.log("json", json);
+    }
+
+    function doMutate(gqlString: string, variables: { variables: {} }) {
+        fetchAPI(gqlString, variables).then((data) => {
+            console.log("json", data.updateDrawing.id);
+            doPublish(data.updateDrawing.id);
+        });
+    }
+
+    function doPublish(id: string) {
+        fetchAPI(
+            `mutation PublishDrawing($id: ID) {
+            publishDrawing(
+              where: {id: $id}
+            ) {
+              id
+              title
+            }
+          }`,
+            {
+                variables: {
+                    id,
+                },
+            }
+        ).then((data) => {
+            console.log("json saved", data);
+        });
     }
 
     type Files = {
@@ -135,7 +186,9 @@ export default function Board() {
 
                     <button
                         className="px-4 py-0 border-blue-500 border-solid border rounded-md text-blue-500"
-                        onClick={() => {}}
+                        onClick={() => {
+                            saveToBackend();
+                        }}
                     >
                         Save to Backend
                     </button>
@@ -194,11 +247,12 @@ export default function Board() {
                     }}
                     // zenModeEnabled={true}
                     UIOptions={UIOptions}
-                    onChange={(
-                        excalidrawElements: object[],
-                        appState: {},
-                        files: any
-                    ) => saveToBackend(excalidrawElements, appState, files)}
+                    scrollToContent={true}
+                    // onChange={(
+                    //     excalidrawElements: object[],
+                    //     appState: {},
+                    //     files: any
+                    // ) => saveToBackend(excalidrawElements, appState, files)}
                 />
             </div>
         </>
