@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import jsonData from "./poc-claro.json"
 
-// console.log(jsonData);
 
 // function getJson(project: string, player: string) {
 //   let result;
