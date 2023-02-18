@@ -25,7 +25,6 @@ export default async function fetchAPI(query:string, variables?:Variables) {
     });
     
     const json = await res.json();
-    console.log('api', json);
 
     if (json.errors) {
         console.error(json.errors);

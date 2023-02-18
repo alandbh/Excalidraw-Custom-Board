@@ -26,27 +26,47 @@ export default function Board() {
         //         setJsonData(dataJson);
         //     });
         // });
+        if (excalidrawAPI) {
+            const updateScene = (sceneObj: SceneObj) => {
+                const sceneObject = sceneObj;
 
-        fetchAPI(
-            `query MyQuery($playerSlug:String, $projectSlug:String) {
-                drawings(where: {player: {slug: $playerSlug}, project: {slug: $projectSlug}}) {
-                  id
-                  title
-                  slug
-                  sceneObject
+                if (excalidrawAPI !== null && sceneObject !== null) {
+                    let filesInScene: object[] = [];
+                    const jsonFiles = sceneObject["files"];
+
+                    for (const fileId in jsonFiles) {
+                        filesInScene.push(sceneObject["files"][fileId]);
+                    }
+
+                    excalidrawAPI.updateScene(sceneObject);
+                    excalidrawAPI.addFiles(filesInScene);
                 }
-              }`,
-            {
-                variables: {
-                    playerSlug: "claro",
-                    projectSlug: "telco-10",
-                },
-            }
-        ).then((data) => {
-            setJsonData(data.drawings[0].sceneObject);
-            // console.log(data.drawings[0])
-        });
-    }, []);
+            };
+
+            fetchAPI(
+                `query MyQuery($playerSlug:String, $projectSlug:String) {
+                    drawings(where: {player: {slug: $playerSlug}, project: {slug: $projectSlug}}) {
+                      id
+                      title
+                      slug
+                      sceneObject
+                    }
+                  }`,
+                {
+                    variables: {
+                        playerSlug: "claro",
+                        projectSlug: "telco-10",
+                    },
+                }
+            ).then((data) => {
+                // setJsonData(data.drawings[0].sceneObject);
+                const sceneObj = data.drawings[0].sceneObject;
+                // console.log(data.drawings[0])
+                console.log("api", sceneObj);
+                updateScene(sceneObj);
+            });
+        }
+    }, [excalidrawAPI]);
 
     /**
      *
@@ -55,28 +75,26 @@ export default function Board() {
      * ----------------------------------------------------------------
      */
 
-    const updateScene = () => {
-        if (excalidrawAPI !== null && jsonData !== null) {
-            let filesInScene: any[] = [];
-            const jsonFiles: any = jsonData["files"];
+    function saveToBackend(
+        excalidrawElements: object[],
+        appState: {},
+        files: any
+    ) {
+        console.log("back", appState);
+    }
 
-            for (const fileId in jsonFiles) {
-                filesInScene.push(jsonData["files"][fileId]);
-            }
-
-            excalidrawAPI.updateScene(jsonData);
-            excalidrawAPI.addFiles(filesInScene);
-
-            // console.log(
-            //     "aaaa",
-            //     jsonData["files"]["17c63251d93085247b060fdb3ed3f07d4a48927f"]
-            // );
-            // console.log("bbb", filesInScene);
-            excalidrawAPI.updateScene({ zoom: { value: 0.3399902343750002 } });
-        }
+    type Files = {
+        [id: string]: object;
     };
 
-    if (jsonData === null || Comp === null) {
+    type SceneObj = {
+        files: Files;
+    };
+
+    // if (jsonData === null || Comp === null) {
+    //     return <div>Loading...</div>;
+    // }
+    if (Comp === null) {
         return <div>Loading...</div>;
     }
 
@@ -84,10 +102,10 @@ export default function Board() {
         return;
     }
     if (excalidrawAPI && jsonData !== null) {
-        console.log("ready", excalidrawAPI.ready);
+        console.log("api", excalidrawAPI.ready);
         if (excalidrawAPI.ready) {
             setTimeout(() => {
-                updateScene();
+                // updateScene();
             });
         }
     }
@@ -115,12 +133,12 @@ export default function Board() {
                         />
                     </svg>
 
-                    {/* <button
-                        className="px-4 py-2 border-blue-500 border-solid border-2 rounded-md text-blue-500"
-                        onClick={updateScene}
+                    <button
+                        className="px-4 py-0 border-blue-500 border-solid border rounded-md text-blue-500"
+                        onClick={() => {}}
                     >
-                        Import JSON and update Scene
-                    </button> */}
+                        Save to Backend
+                    </button>
 
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -176,7 +194,11 @@ export default function Board() {
                     }}
                     // zenModeEnabled={true}
                     UIOptions={UIOptions}
-                    zoom={{ value: 0.3399902343750002 }}
+                    onChange={(
+                        excalidrawElements: object[],
+                        appState: {},
+                        files: any
+                    ) => saveToBackend(excalidrawElements, appState, files)}
                 />
             </div>
         </>
