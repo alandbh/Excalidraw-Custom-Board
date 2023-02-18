@@ -3,11 +3,13 @@ import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import fetchAPI from "@/utils/graph";
 let serializeAsJSON: any;
+let MainMenu: any = null;
 
 type stateComp = React.MemoExoticComponent<any> | null;
 
 export default function Board() {
     const [Comp, setComp] = useState<stateComp>(null);
+    // const [MainMenu, setMainMenu] = useState(null);
     const [excalidrawAPI, setExcalidrawAPI] = useState<any>();
     const [jsonData, setJsonData] = useState(null);
     const UIOptions = {
@@ -19,6 +21,11 @@ export default function Board() {
     useEffect(() => {
         import("@excalidraw/excalidraw").then((comp) => {
             setComp(comp.Excalidraw);
+        });
+    }, []);
+    useEffect(() => {
+        import("@excalidraw/excalidraw").then((comp) => {
+            MainMenu = comp.MainMenu;
         });
     }, []);
 
@@ -149,11 +156,11 @@ export default function Board() {
     // if (jsonData === null || Comp === null) {
     //     return <div>Loading...</div>;
     // }
-    if (Comp === null) {
+    if (Comp === null || !MainMenu === null) {
         return <div>Loading...</div>;
     }
 
-    if (!Comp) {
+    if (!Comp || !MainMenu) {
         return;
     }
     if (excalidrawAPI && jsonData !== null) {
@@ -253,7 +260,19 @@ export default function Board() {
                     //     appState: {},
                     //     files: any
                     // ) => saveToBackend(excalidrawElements, appState, files)}
-                />
+                >
+                    <MainMenu>
+                        <MainMenu.DefaultItems.LoadScene />
+                        <MainMenu.DefaultItems.Export />
+                        <MainMenu.DefaultItems.SaveAsImage />
+                        <hr />
+                        <MainMenu.DefaultItems.ToggleTheme />
+                        <hr />
+                        <MainMenu.DefaultItems.ChangeCanvasBackground />
+                        <hr style={{ marginTop: 20 }} />
+                        <MainMenu.DefaultItems.Help />
+                    </MainMenu>
+                </Comp>
             </div>
         </>
     );
