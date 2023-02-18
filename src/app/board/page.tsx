@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { serializeAsJSON } from "@excalidraw/excalidraw";
+import dynamic from "next/dynamic";
 import fetchAPI from "@/utils/graph";
+let serializeAsJSON: any;
 
 type stateComp = React.MemoExoticComponent<any> | null;
 
@@ -79,6 +80,17 @@ export default function Board() {
      * ----------------------------------------------------------------
      */
 
+    /**
+     * Dynamic import of serializeAsJSON, since this is a client side library, that doesn't work in SSR
+     */
+    useEffect(() => {
+        const initImport = async () => {
+            const { serializeAsJSON } = await import("@excalidraw/excalidraw");
+            // Add logic with `term`
+        };
+        initImport();
+    }, []);
+
     function saveToBackend() {
         const json = serializeAsJSON(
             excalidrawAPI.getSceneElements(),
@@ -133,14 +145,6 @@ export default function Board() {
             console.log("json saved", data);
         });
     }
-
-    type Files = {
-        [id: string]: object;
-    };
-
-    type SceneObj = {
-        files: Files;
-    };
 
     // if (jsonData === null || Comp === null) {
     //     return <div>Loading...</div>;
@@ -241,10 +245,6 @@ export default function Board() {
             <div style={{ height: "calc(100vh - 80px)" }}>
                 <Comp
                     ref={(api: any) => setExcalidrawAPI(api)}
-                    appState={{
-                        currentItemFillStyle: "solid",
-                        currentItemRoughness: 0,
-                    }}
                     // zenModeEnabled={true}
                     UIOptions={UIOptions}
                     scrollToContent={true}
