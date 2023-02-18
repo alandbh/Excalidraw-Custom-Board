@@ -14,7 +14,6 @@ export default function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-//   console.log(getJson('retail-30', 'magalu'));
   
   res.status(200).json( jsonData )
 }
