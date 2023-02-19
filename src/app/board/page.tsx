@@ -1,11 +1,25 @@
 "use client";
 import React, { useState, useEffect } from "react";
+
 import dynamic from "next/dynamic";
 import fetchAPI from "@/utils/graph";
+import debounce from "@/utils/debouce";
+// import throttle from "@/utils/throttle";
 let serializeAsJSON: any;
 let MainMenu: any = null;
 
 type stateComp = React.MemoExoticComponent<any> | null;
+
+let saveTimeout: any = null;
+
+function delay(func: Function, wait: number = 2000) {
+    if (saveTimeout !== null) {
+        clearTimeout(saveTimeout);
+    }
+    saveTimeout = window.setTimeout(() => {
+        func();
+    }, wait);
+}
 
 export default function Board() {
     const [Comp, setComp] = useState<stateComp>(null);
@@ -74,7 +88,7 @@ export default function Board() {
                 // setJsonData(data.drawings[0].sceneObject);
                 const sceneObj = data.drawings[0].sceneObject;
                 // console.log(data.drawings[0])
-                console.log("api", sceneObj);
+                // console.log("api", sceneObj);
                 updateScene(sceneObj);
             });
         }
@@ -92,7 +106,8 @@ export default function Board() {
      */
     useEffect(() => {
         const initImport = async () => {
-            const { serializeAsJSON } = await import("@excalidraw/excalidraw");
+            const exdModule = await import("@excalidraw/excalidraw");
+            serializeAsJSON = exdModule.serializeAsJSON;
             // Add logic with `term`
         };
         initImport();
@@ -153,24 +168,33 @@ export default function Board() {
         });
     }
 
-    // if (jsonData === null || Comp === null) {
-    //     return <div>Loading...</div>;
-    // }
-    if (Comp === null || !MainMenu === null) {
+    /**
+     * Save the drawing on changes
+     * --------------------------------
+     */
+
+    function handleOnChange() {
+        // Under the limit of 5 reqs per second
+        delay(saveToBackend, 300);
+    }
+
+    // ----------------------------------------------------------------
+
+    if (Comp === null || MainMenu === null) {
         return <div>Loading...</div>;
     }
 
     if (!Comp || !MainMenu) {
         return;
     }
-    if (excalidrawAPI && jsonData !== null) {
-        console.log("api", excalidrawAPI.ready);
-        if (excalidrawAPI.ready) {
-            setTimeout(() => {
-                // updateScene();
-            });
-        }
-    }
+    // if (excalidrawAPI && jsonData !== null) {
+    //     console.log("api", excalidrawAPI.ready);
+    //     if (excalidrawAPI.ready) {
+    //         setTimeout(() => {
+    //             // updateScene();
+    //         });
+    //     }
+    // }
     return (
         <>
             <div className="h-10 px-3 transition-opacity shadow-md mb-2">
@@ -255,6 +279,7 @@ export default function Board() {
                     // zenModeEnabled={true}
                     UIOptions={UIOptions}
                     scrollToContent={true}
+                    onChange={handleOnChange}
                     // onChange={(
                     //     excalidrawElements: object[],
                     //     appState: {},
