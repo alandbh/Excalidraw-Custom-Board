@@ -3,16 +3,13 @@ import React, { useState, useEffect } from "react";
 import fetchAPI from "@/utils/graph";
 import delay from "@/utils/delay";
 
-let serializeAsJSON: any;
-let MainMenu: any = null;
-
-type stateComp = React.MemoExoticComponent<any> | null;
+type ExcalidrawType = React.MemoExoticComponent<any> | null;
 
 export default function Board() {
-    const [Comp, setComp] = useState<stateComp>(null);
-    // const [MainMenu, setMainMenu] = useState(null);
+    const [Excalidraw, setExcalidraw] = useState<ExcalidrawType>(null);
+    const [MainComp, setMainComp] = useState<any>(null);
     const [excalidrawAPI, setExcalidrawAPI] = useState<any>();
-    const [jsonData, setJsonData] = useState(null);
+
     const UIOptions = {
         canvasActions: {
             changeViewBackgroundColor: true,
@@ -21,21 +18,12 @@ export default function Board() {
     };
     useEffect(() => {
         import("@excalidraw/excalidraw").then((comp) => {
-            setComp(comp.Excalidraw);
-        });
-    }, []);
-    useEffect(() => {
-        import("@excalidraw/excalidraw").then((comp) => {
-            MainMenu = comp.MainMenu;
+            setExcalidraw(comp.Excalidraw);
+            setMainComp(comp);
         });
     }, []);
 
     useEffect(() => {
-        // fetch("/api/scene").then((data) => {
-        //     data.json().then((dataJson) => {
-        //         setJsonData(dataJson);
-        //     });
-        // });
         if (excalidrawAPI) {
             const updateScene = (sceneObj: string | object) => {
                 const sceneObject =
@@ -72,10 +60,7 @@ export default function Board() {
                     },
                 }
             ).then((data) => {
-                // setJsonData(data.drawings[0].sceneObject);
                 const sceneObj = data.drawings[0].sceneObject;
-                // console.log(data.drawings[0])
-                // console.log("api", sceneObj);
                 updateScene(sceneObj);
             });
         }
@@ -88,20 +73,8 @@ export default function Board() {
      * ----------------------------------------------------------------
      */
 
-    /**
-     * Dynamic import of serializeAsJSON, since this is a client side library, that doesn't work in SSR
-     */
-    useEffect(() => {
-        const initImport = async () => {
-            const exdModule = await import("@excalidraw/excalidraw");
-            serializeAsJSON = exdModule.serializeAsJSON;
-            // Add logic with `term`
-        };
-        initImport();
-    }, []);
-
     function saveToBackend() {
-        const json = serializeAsJSON(
+        const json = MainComp.serializeAsJSON(
             excalidrawAPI.getSceneElements(),
             excalidrawAPI.getAppState(),
             excalidrawAPI.getFiles(),
@@ -162,26 +135,16 @@ export default function Board() {
 
     function handleOnChange() {
         // Under the limit of 5 reqs per second
-        delay(saveToBackend, 300);
+        delay(saveToBackend, 500);
     }
 
     // ----------------------------------------------------------------
 
-    if (Comp === null || MainMenu === null) {
+    if (Excalidraw === null || MainComp.MainMenu === null) {
         return <div>Loading...</div>;
     }
 
-    if (!Comp || !MainMenu) {
-        return;
-    }
-    // if (excalidrawAPI && jsonData !== null) {
-    //     console.log("api", excalidrawAPI.ready);
-    //     if (excalidrawAPI.ready) {
-    //         setTimeout(() => {
-    //             // updateScene();
-    //         });
-    //     }
-    // }
+    let hideMenu = "hideMenu";
     return (
         <>
             <div className="h-10 px-3 transition-opacity shadow-md mb-2">
@@ -260,32 +223,63 @@ export default function Board() {
                     </div>
                 </div>
             </div>
-            <div style={{ height: "calc(100vh - 80px)" }}>
-                <Comp
+            <div style={{ height: "calc(100vh - 80px)" }} className={hideMenu}>
+                <Excalidraw
                     ref={(api: any) => setExcalidrawAPI(api)}
                     // zenModeEnabled={true}
                     UIOptions={UIOptions}
                     scrollToContent={true}
                     onChange={handleOnChange}
+                    // viewModeEnabled={true}
                     // onChange={(
                     //     excalidrawElements: object[],
                     //     appState: {},
                     //     files: any
                     // ) => saveToBackend(excalidrawElements, appState, files)}
                 >
-                    <MainMenu>
-                        <MainMenu.DefaultItems.LoadScene />
-                        <MainMenu.DefaultItems.Export />
-                        <MainMenu.DefaultItems.SaveAsImage />
-                        <hr />
-                        <MainMenu.DefaultItems.ToggleTheme />
-                        <hr />
-                        <MainMenu.DefaultItems.ChangeCanvasBackground />
-                        <hr style={{ marginTop: 20 }} />
-                        <MainMenu.DefaultItems.Help />
-                    </MainMenu>
-                </Comp>
+                    <MainComp.MainMenu>
+                        <MenuItems
+                            isVisible={true}
+                            parent={MainComp.MainMenu}
+                        />
+                    </MainComp.MainMenu>
+                </Excalidraw>
             </div>
         </>
     );
+}
+
+type MenuProps = {
+    isVisible: boolean;
+    parent: {
+        DefaultItems: {
+            LoadScene: React.FC;
+            Export: React.FC;
+            SaveAsImage: React.FC;
+            ToggleTheme: React.FC;
+            ChangeCanvasBackground: React.FC;
+            Help: React.FC;
+        };
+    };
+};
+
+function MenuItems({ isVisible, parent }: MenuProps) {
+    const MainMenu = parent;
+    if (isVisible && MainMenu) {
+        return (
+            <>
+                <MainMenu.DefaultItems.LoadScene />
+                <MainMenu.DefaultItems.Export />
+                <MainMenu.DefaultItems.SaveAsImage />
+                <hr />
+                <MainMenu.DefaultItems.ToggleTheme />
+                <hr />
+                <MainMenu.DefaultItems.ChangeCanvasBackground />
+                <hr style={{ marginTop: 20 }} />
+                <MainMenu.DefaultItems.Help />
+            </>
+        );
+    } else {
+        return null;
+    }
 }

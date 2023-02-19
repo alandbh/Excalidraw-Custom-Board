@@ -8,3 +8,7 @@
     /* color-scheme: dark; */
   }
 }
+.excalidraw .App-menu__left {
+  position: fixed;
+  right: 0;
+}
