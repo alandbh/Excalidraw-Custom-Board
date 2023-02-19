@@ -206,14 +206,14 @@ export default function Board() {
                         />
                     </svg>
 
-                    <button
+                    {/* <button
                         className="px-4 py-0 border-blue-500 border-solid border rounded-md text-blue-500"
                         onClick={() => {
                             saveToBackend();
                         }}
                     >
                         Save to Backend
-                    </button>
+                    </button> */}
 
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
