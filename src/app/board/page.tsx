@@ -1,25 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
-
-import dynamic from "next/dynamic";
 import fetchAPI from "@/utils/graph";
-import debounce from "@/utils/debouce";
-// import throttle from "@/utils/throttle";
+import delay from "@/utils/delay";
+
 let serializeAsJSON: any;
 let MainMenu: any = null;
 
 type stateComp = React.MemoExoticComponent<any> | null;
-
-let saveTimeout: any = null;
-
-function delay(func: Function, wait: number = 2000) {
-    if (saveTimeout !== null) {
-        clearTimeout(saveTimeout);
-    }
-    saveTimeout = window.setTimeout(() => {
-        func();
-    }, wait);
-}
 
 export default function Board() {
     const [Comp, setComp] = useState<stateComp>(null);
