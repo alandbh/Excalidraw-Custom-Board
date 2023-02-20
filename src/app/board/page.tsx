@@ -1,10 +1,12 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import fetchAPI from "@/utils/graph";
 import delay from "@/utils/delay";
 import { Claro, GoogleCloud, RgaDraw } from "@/components/logos";
 
 type ExcalidrawType = React.MemoExoticComponent<any> | null;
+
+let drawingVersion: string;
 
 export default function Board() {
     const [Excalidraw, setExcalidraw] = useState<ExcalidrawType>(null);
@@ -24,57 +26,94 @@ export default function Board() {
         });
     }, []);
 
-    useEffect(() => {
-        if (excalidrawAPI) {
-            const updateScene = (sceneObj: string | object) => {
-                const sceneObject =
-                    typeof sceneObj === "string"
-                        ? JSON.parse(sceneObj)
-                        : sceneObj;
+    const updateScene = useCallback(
+        (sceneObj: string | object) => {
+            const sceneObject =
+                typeof sceneObj === "string" ? JSON.parse(sceneObj) : sceneObj;
 
-                if (excalidrawAPI !== null && sceneObject !== null) {
-                    let filesInScene: object[] = [];
-                    const jsonFiles = sceneObject["files"];
+            if (excalidrawAPI !== null && sceneObject !== null) {
+                let filesInScene: object[] = [];
+                const jsonFiles = sceneObject["files"];
 
-                    for (const fileId in jsonFiles) {
-                        filesInScene.push(sceneObject["files"][fileId]);
-                    }
-
-                    excalidrawAPI.updateScene(sceneObject);
-                    excalidrawAPI.addFiles(filesInScene);
+                for (const fileId in jsonFiles) {
+                    filesInScene.push(sceneObject["files"][fileId]);
                 }
-            };
 
-            fetchAPI(
+                excalidrawAPI.updateScene(sceneObject);
+                excalidrawAPI.addFiles(filesInScene);
+            }
+        },
+        [excalidrawAPI]
+    );
+
+    const fetchDrawing = useCallback(
+        async (
+            shouldUpdateVersion: boolean = false,
+            loadCurrentScene: boolean = false
+        ) => {
+            const data = await fetchAPI(
                 `query MyQuery($playerSlug:String, $projectSlug:String) {
-                    drawings(where: {player: {slug: $playerSlug}, project: {slug: $projectSlug}}) {
-                      id
-                      title
-                      slug
-                      sceneObject
-                    }
-                  }`,
+                drawings(where: {player: {slug: $playerSlug}, project: {slug: $projectSlug}}) {
+                  id
+                  title
+                  updatedAt
+                  sceneObject
+                }
+              }`,
                 {
                     variables: {
                         playerSlug: "claro",
                         projectSlug: "telco-10",
                     },
                 }
-            ).then((data) => {
-                const sceneObj = data.drawings[0].sceneObject;
+            );
+
+            const sceneObj = data.drawings[0].sceneObject;
+            if (shouldUpdateVersion) {
+                drawingVersion = data.drawings[0].updatedAt;
+            }
+            if (loadCurrentScene) {
                 updateScene(sceneObj);
-            });
-        }
-    }, [excalidrawAPI]);
+            }
+            return data.drawings[0];
+        },
+        [updateScene]
+    );
 
     /**
      *
      * ----------------------------------------------------------------
-     *
+     * Initializing The Scene
      * ----------------------------------------------------------------
      */
 
-    function saveToBackend() {
+    useEffect(() => {
+        if (excalidrawAPI) {
+            fetchDrawing(true, true);
+        }
+    }, [excalidrawAPI, fetchDrawing]);
+
+    /**
+     *
+     * Saving to backend
+     * ----------------------------------------------------------------
+     */
+    function handleOnChange() {
+        // Under the limit of 5 reqs per second
+        delay(saveToBackend, 500);
+    }
+
+    async function saveToBackend() {
+        // Check if there's a newer version of the drawing on the backend
+        const remoteDrawing = await fetchDrawing();
+        const remoteDrawingVersion = new Date(remoteDrawing.updatedAt);
+        const currentDrawingVersion = new Date(drawingVersion);
+
+        if (remoteDrawingVersion > currentDrawingVersion) {
+            fetchDrawing(true, true);
+            return;
+        }
+
         const json = MainComp.serializeAsJSON(
             excalidrawAPI.getSceneElements(),
             excalidrawAPI.getAppState(),
@@ -117,6 +156,7 @@ export default function Board() {
             ) {
               id
               title
+              updatedAt
             }
           }`,
             {
@@ -126,17 +166,8 @@ export default function Board() {
             }
         ).then((data) => {
             console.log("json saved", data);
+            drawingVersion = data.publishDrawing.updatedAt;
         });
-    }
-
-    /**
-     * Save the drawing on changes
-     * --------------------------------
-     */
-
-    function handleOnChange() {
-        // Under the limit of 5 reqs per second
-        delay(saveToBackend, 500);
     }
 
     // ----------------------------------------------------------------
