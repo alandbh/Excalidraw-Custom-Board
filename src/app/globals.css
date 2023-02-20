@@ -12,3 +12,30 @@
   position: fixed;
   right: 0;
 }
+
+/* .excalidraw main {
+  height: calc(100vh - 56px);
+  position: relative; 
+  width: 100%;
+} */
+.excalidraw main .excalidraw__canvas {
+  /* margin-top: 48px; */
+  /* height: 100% !important; */
+}
+.layer-ui__wrapper__top-right{
+  display: none !important;
+}
+.excalidraw .FixedSideContainer.FixedSideContainer_side_top {
+top: 10px;
+}
+
+.excalidraw .Island.App-toolbar {
+  box-shadow: none;
+  top: -7px;
+}
+
+.excalidraw .dropdown-menu-button {
+  border-radius: 4px !important;
+  border: transparent !important
+  ;
+}
