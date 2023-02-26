@@ -31,7 +31,7 @@ export function GoogleCloud() {
     );
 }
 
-export function RgaDraw() {
+export function RgaDraw(props: any) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -39,6 +39,7 @@ export function RgaDraw() {
             height="28"
             fill="none"
             viewBox="0 0 146 28"
+            style={props.style}
         >
             <path
                 fill="#F80303"
