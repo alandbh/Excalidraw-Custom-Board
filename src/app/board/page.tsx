@@ -76,7 +76,9 @@ export default function Board() {
                 }
 
                 excalidrawAPI.updateScene(sceneObject);
-                excalidrawAPI.addFiles(filesInScene);
+                setTimeout(() => {
+                    excalidrawAPI.addFiles(filesInScene);
+                }, 500);
             }
         },
         [excalidrawAPI]
