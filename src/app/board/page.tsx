@@ -2,23 +2,59 @@
 import React, { useState, useEffect, useCallback } from "react";
 import fetchAPI from "@/utils/graph";
 import delay from "@/utils/delay";
-import { Claro, GoogleCloud, RgaDraw } from "@/components/logos";
+import { Vivo, GoogleCloud, RgaDraw } from "@/components/logos";
 
 type ExcalidrawType = React.MemoExoticComponent<any> | null;
 
 let drawingVersion: string;
+
+const UIOptions = {
+    canvasActions: {
+        changeViewBackgroundColor: true,
+        toggleTheme: true,
+    },
+};
+
+const initialData = {
+    // elements: [
+    //     {
+    //         type: "rectangle",
+    //         version: 93,
+    //         versionNonce: 268541241,
+    //         isDeleted: false,
+    //         id: "0",
+    //         fillStyle: "solid",
+    //         strokeWidth: 1,
+    //         strokeStyle: "solid",
+    //         roughness: 0,
+    //         opacity: 100,
+    //         angle: 0,
+    //         x: 30,
+    //         y: 30,
+    //         // x: -1418.675537109375,
+    //         // y: -484.9792175292969,
+    //         strokeColor: "#aaaaaa",
+    //         backgroundColor: "transparent",
+    //         width: 40,
+    //         height: 40,
+    //         seed: 1968410350,
+    //         groupIds: [],
+    //         roundness: null,
+    //         boundElements: [],
+    //         updated: 1677372276611,
+    //         link: null,
+    //         locked: false,
+    //     },
+    // ],
+    appState: { viewBackgroundColor: "#ff0000" },
+    scrollToContent: true,
+};
 
 export default function Board() {
     const [Excalidraw, setExcalidraw] = useState<ExcalidrawType>(null);
     const [MainComp, setMainComp] = useState<any>(null);
     const [excalidrawAPI, setExcalidrawAPI] = useState<any>();
 
-    const UIOptions = {
-        canvasActions: {
-            changeViewBackgroundColor: true,
-            toggleTheme: true,
-        },
-    };
     useEffect(() => {
         import("@excalidraw/excalidraw").then((comp) => {
             setExcalidraw(comp.Excalidraw);
@@ -90,6 +126,7 @@ export default function Board() {
     useEffect(() => {
         if (excalidrawAPI) {
             fetchDrawing(true, true);
+            // excalidrawAPI.updateScene(initialData);
         }
     }, [excalidrawAPI, fetchDrawing]);
 
@@ -113,6 +150,8 @@ export default function Board() {
             fetchDrawing(true, true);
             return;
         }
+
+        console.log("ELEMENTS", excalidrawAPI.getAppState());
 
         const json = MainComp.serializeAsJSON(
             excalidrawAPI.getSceneElements(),
@@ -183,7 +222,7 @@ export default function Board() {
                 <div className="flex px-3 justify-between h-14 items-center pl-14 bg-white">
                     <div className="flex gap-7 items-center">
                         <GoogleCloud />
-                        <Claro />
+                        <Vivo />
                     </div>
 
                     {/* <button
@@ -207,6 +246,7 @@ export default function Board() {
                     UIOptions={UIOptions}
                     scrollToContent={true}
                     onChange={handleOnChange}
+                    // initialData={initialData}
                     // viewModeEnabled={true}
                     // onChange={(
                     //     excalidrawElements: object[],
