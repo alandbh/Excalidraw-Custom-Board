@@ -53,6 +53,7 @@ const initialData = {
 };
 
 export default function Board() {
+    const router = useRouter();
     const searchParams = useSearchParams();
     const drawindId = searchParams.get("id");
     // console.log(searchParams.get("id"));
@@ -61,6 +62,7 @@ export default function Board() {
     const [Excalidraw, setExcalidraw] = useState<ExcalidrawType>(null);
     const [MainComp, setMainComp] = useState<any>(null);
     const [excalidrawAPI, setExcalidrawAPI] = useState<any>();
+    const [isValidDrawing, setIsValidDrawing] = useState<boolean>(false);
 
     useEffect(() => {
         import("@excalidraw/excalidraw").then((comp) => {
@@ -98,7 +100,7 @@ export default function Board() {
         ) => {
             const data = await fetchAPI(
                 `query MyQuery($id:ID) {
-                drawings(where: {id: $id}) {
+                drawing(where: {id: $id}) {
                   id
                   title
                   updatedAt
@@ -112,16 +114,21 @@ export default function Board() {
                 }
             );
 
-            const sceneObj = data.drawings[0].sceneObject;
-            if (shouldUpdateVersion) {
-                drawingVersion = data.drawings[0].updatedAt;
+            if (data.drawing !== null) {
+                setIsValidDrawing(true);
+                const sceneObj = data.drawing.sceneObject;
+                if (shouldUpdateVersion) {
+                    drawingVersion = data.drawing.updatedAt;
+                }
+                if (loadCurrentScene && excalidrawAPI) {
+                    updateScene(sceneObj);
+                }
+                return data.drawing;
             }
-            if (loadCurrentScene) {
-                updateScene(sceneObj);
-            }
-            return data.drawings[0];
+
+            router.push("/gallery");
         },
-        [updateScene]
+        [updateScene, drawindId, excalidrawAPI, router]
     );
 
     /**
@@ -132,8 +139,8 @@ export default function Board() {
      */
 
     useEffect(() => {
+        fetchDrawing(true, true);
         if (excalidrawAPI) {
-            fetchDrawing(true, true);
             // excalidrawAPI.updateScene(initialData);
         }
     }, [excalidrawAPI, fetchDrawing]);
@@ -220,7 +227,7 @@ export default function Board() {
 
     // ----------------------------------------------------------------
 
-    if (Excalidraw === null || MainComp.MainMenu === null) {
+    if (Excalidraw === null || MainComp.MainMenu === null || !isValidDrawing) {
         return <div>Loading...</div>;
     }
 
