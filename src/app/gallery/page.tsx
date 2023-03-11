@@ -1,6 +1,7 @@
+"use client";
+import React from "react";
 import { RgaDraw } from "@/components/logos";
 import Link from "next/link";
-
 export default function Gallery() {
     return (
         <>
@@ -67,7 +68,10 @@ export default function Gallery() {
                 <div>
                     <h1 className="text-2xl text-gray-400 mb-8">New Drawing</h1>
 
-                    <div className="flex flex-col gap-7">
+                    <form
+                        onSubmit={(evt) => handleOnSubmit(evt)}
+                        className="flex flex-col gap-7"
+                    >
                         <div className="flex flex-col gap-2">
                             <label
                                 className="font-bold text-lg"
@@ -100,16 +104,41 @@ export default function Gallery() {
                         </div>
 
                         <div className="flex  gap-2">
-                            <button className="border border-blue-500 px-6 py-3 text-white/80 font-bold bg-blue-500 hover:bg-blue-700">
+                            <button
+                                type="submit"
+                                className="border border-blue-500 px-6 py-3 text-white/80 font-bold bg-blue-500 hover:bg-blue-700"
+                            >
                                 Save
                             </button>
                             <button className="border border-blue-500 px-6 py-3 text-blue-500 hover:bg-blue-500/10">
                                 Cancel
                             </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </main>
         </>
     );
+}
+
+async function handleOnSubmit(evt: React.SyntheticEvent) {
+    evt.preventDefault();
+    const target = evt.target as typeof evt.target & {
+        title: { value: string };
+        client: { value: string };
+    };
+    const data = {
+        title: target.title.value,
+        client: target.client.value || "",
+    };
+    const response = await fetch("/api/addnew", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    });
+
+    const returnedData = await response.json();
+    console.log("evento", returnedData);
 }

@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+
 import fetchAPI from "@/utils/graph";
 import delay from "@/utils/delay";
 import { Vivo, GoogleCloud, RgaDraw } from "@/components/logos";
@@ -51,6 +53,11 @@ const initialData = {
 };
 
 export default function Board() {
+    const searchParams = useSearchParams();
+    const drawindId = searchParams.get("id");
+    // console.log(searchParams.get("id"));
+
+    // const { id } = router.query || "";
     const [Excalidraw, setExcalidraw] = useState<ExcalidrawType>(null);
     const [MainComp, setMainComp] = useState<any>(null);
     const [excalidrawAPI, setExcalidrawAPI] = useState<any>();
@@ -90,8 +97,8 @@ export default function Board() {
             loadCurrentScene: boolean = false
         ) => {
             const data = await fetchAPI(
-                `query MyQuery($playerSlug:String, $projectSlug:String) {
-                drawings(where: {player: {slug: $playerSlug}, project: {slug: $projectSlug}}) {
+                `query MyQuery($id:ID) {
+                drawings(where: {id: $id}) {
                   id
                   title
                   updatedAt
@@ -100,8 +107,7 @@ export default function Board() {
               }`,
                 {
                     variables: {
-                        playerSlug: "claro",
-                        projectSlug: "telco-10",
+                        id: drawindId,
                     },
                 }
             );
@@ -163,9 +169,9 @@ export default function Board() {
         );
 
         doMutate(
-            `mutation MyMutation($json: Json) {
+            `mutation MyMutation($json: Json, $id: ID) {
             updateDrawing(
-              where: {id: "cle8x88jd3qti0blrt5pac2uz"}
+              where: {id: $id}
               data: {sceneObject: $json}
             ) {
               id
@@ -174,6 +180,7 @@ export default function Board() {
           }`,
             {
                 variables: {
+                    id: drawindId,
                     json,
                 },
             }
