@@ -1,8 +1,12 @@
 "use client";
 import React from "react";
+import { useRouter } from "next/navigation";
 import { RgaDraw } from "@/components/logos";
 import Link from "next/link";
+
+let router;
 export default function Gallery() {
+    router = useRouter();
     return (
         <>
             <header className="flex justify-between p-8">
@@ -140,5 +144,9 @@ async function handleOnSubmit(evt: React.SyntheticEvent) {
     });
 
     const returnedData = await response.json();
+
+    if (response.ok) {
+        router.push(`/board?id=${returnedData.publishDrawing.id}`);
+    }
     console.log("evento", returnedData);
 }

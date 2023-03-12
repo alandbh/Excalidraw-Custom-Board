@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import fetchAPI from '@/utils/graph'
 
-export default function handler(req:NextApiRequest, res:NextApiResponse) {
+export default async function handler(req:NextApiRequest, res:NextApiResponse) {
     // Get data submitted in request's body.
     const body = req.body
   
@@ -18,7 +18,7 @@ export default function handler(req:NextApiRequest, res:NextApiResponse) {
   
     // Found the name.
     // Sends a HTTP success code
-    res.status(200).json({ data: `CRIADOOO ${body.title} ${body.client}` })
+    
 
     const newSceneObject = {
       "type": "excalidraw",
@@ -35,9 +35,12 @@ export default function handler(req:NextApiRequest, res:NextApiResponse) {
       }
     }
 
-    doCreate(
-      `mutation CreateDrawing($title: String!) {
-        createDrawing(data: {title: $title}) {
+    const createdId = await doCreate(
+      `mutation CreateDrawing($title: String!, $sceneObject: Json) {
+        createDrawing(data: {
+          title: $title
+          sceneObject: $sceneObject
+        }) {
           id
           title
         }
@@ -49,17 +52,22 @@ export default function handler(req:NextApiRequest, res:NextApiResponse) {
           },
       }
   );
+
+  const publishedData = await doPublish(createdId);
+  res.status(200).json(publishedData)
   }
 
-function doCreate(gqlString: string, variables: { variables: {} }) {
-    fetchAPI(gqlString, variables).then((data) => {
-        console.log("created data", data);
-        doPublish(data.createDrawing.id);
-    });
+async function doCreate(gqlString: string, variables: { variables: {} }) {
+  const createdData = await fetchAPI(gqlString, variables);
+  return createdData.createDrawing.id
+    // fetchAPI(gqlString, variables).then((data) => {
+    //     console.log("created data", data);
+    //     doPublish(data.createDrawing.id);
+    // });
 }
 
-function doPublish(id: string) {
-  fetchAPI(
+async function doPublish(id: string) {
+  const publishedData = await fetchAPI(
       `mutation PublishDrawing($id: ID) {
       publishDrawing(
         where: {id: $id}
@@ -74,7 +82,7 @@ function doPublish(id: string) {
               id,
           },
       }
-  ).then((data) => {
-      console.log("published data", data);
-  });
+  );
+
+  return publishedData
 }
