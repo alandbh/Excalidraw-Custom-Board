@@ -63,6 +63,7 @@ export default function Board() {
     const [MainComp, setMainComp] = useState<any>(null);
     const [excalidrawAPI, setExcalidrawAPI] = useState<any>();
     const [isValidDrawing, setIsValidDrawing] = useState<boolean>(false);
+    const [drawingTitle, setDrawingTitle] = useState<string>("");
 
     useEffect(() => {
         import("@excalidraw/excalidraw").then((comp) => {
@@ -116,7 +117,11 @@ export default function Board() {
 
             if (data.drawing !== null) {
                 setIsValidDrawing(true);
+
                 const sceneObj = data.drawing.sceneObject;
+
+                setDrawingTitle(data.drawing.title);
+
                 if (shouldUpdateVersion) {
                     drawingVersion = data.drawing.updatedAt;
                 }
@@ -176,10 +181,10 @@ export default function Board() {
         );
 
         doMutate(
-            `mutation MyMutation($json: Json, $id: ID) {
+            `mutation MyMutation($json: Json, $id: ID, $title: String) {
             updateDrawing(
               where: {id: $id}
-              data: {sceneObject: $json}
+              data: {sceneObject: $json, title: $title}
             ) {
               id
               title
@@ -189,6 +194,7 @@ export default function Board() {
                 variables: {
                     id: drawindId,
                     json,
+                    title: drawingTitle,
                 },
             }
         );
@@ -225,6 +231,47 @@ export default function Board() {
         });
     }
 
+    /**
+     *
+     * On Click on the Title
+     */
+
+    function handleOnClickTitle(evt: React.SyntheticEvent) {
+        const target = evt.target;
+        target.contentEditable = true;
+        target.focus();
+
+        // console.log(target.add);
+    }
+
+    function handleOnTitleBlur(evt: React.SyntheticEvent) {
+        const target = evt.target;
+        setDrawingTitle(target.innerText);
+
+        // console.log("blurrr", target.textContent);
+        // console.log("blurrr state", drawingTitle);
+        delay(handleOnChange, 500);
+
+        target.contentEditable = false;
+    }
+
+    function handleOnTitleKeyDown(evt: React.SyntheticEvent) {
+        const target = evt.target;
+        if (evt.keyCode === 13) {
+            evt.preventDefault();
+            setDrawingTitle(target.innerText);
+            target.blur();
+            target.contentEditable = false;
+            handleOnChange();
+        }
+    }
+    function handleOnTitleChange(evt: React.SyntheticEvent) {
+        const target = evt.target;
+
+        setDrawingTitle(target.textContent);
+        console.log("change", target.textContent);
+    }
+
     // ----------------------------------------------------------------
 
     if (Excalidraw === null || MainComp.MainMenu === null || !isValidDrawing) {
@@ -234,7 +281,23 @@ export default function Board() {
     let hideMenu = "hideMenu";
     return (
         <>
-            <header className="h-14  transition-opacity shadow-md fixed z-[3] w-full">
+            <header className="h-14 transition-opacity shadow-md fixed z-[3] w-full">
+                <div className="flex px-3 justify-between h-10 items-center pl-16 bg-white">
+                    <h1
+                        contentEditable={false}
+                        onClick={(evt) => handleOnClickTitle(evt)}
+                        onBlur={handleOnTitleBlur}
+                        onKeyDown={handleOnTitleKeyDown}
+                        // onChange={handleOnTitleChange}
+                        // onFocus={(evt) => handleClickTitle(evt)}
+                        className="font-bold text-xl p-1"
+                    >
+                        {drawingTitle}
+                    </h1>
+                    <div className="flex content-end gap-7 items-center">
+                        <RgaDraw />
+                    </div>
+                </div>
                 <div className="flex px-3 justify-between h-14 items-center pl-14 bg-white">
                     <div className="flex gap-7 items-center">
                         <GoogleCloud />
@@ -250,9 +313,9 @@ export default function Board() {
                         Save to Backend
                     </button> */}
 
-                    <div className="flex content-end gap-7 items-center">
+                    {/* <div className="flex content-end gap-7 items-center">
                         <RgaDraw />
-                    </div>
+                    </div> */}
                 </div>
             </header>
             <div style={{ height: "calc(100vh - 0px)" }} className={hideMenu}>
