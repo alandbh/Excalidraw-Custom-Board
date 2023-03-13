@@ -324,8 +324,8 @@ export default function Board() {
                 </div>
                 <div className="flex px-3 justify-between h-14 items-center pl-14 bg-white">
                     <div className="flex gap-7 items-center">
-                        <GoogleCloud />
-                        <Vivo />
+                        {/* <GoogleCloud /> */}
+                        {/* <Vivo /> */}
                     </div>
 
                     {/* <button
