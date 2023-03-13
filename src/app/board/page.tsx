@@ -237,7 +237,10 @@ export default function Board() {
      */
 
     function handleOnClickTitle(evt: React.SyntheticEvent) {
-        const target = evt.target;
+        const target = evt.target as typeof evt.target & {
+            contentEditable: boolean;
+            focus: () => void;
+        };
         target.contentEditable = true;
         target.focus();
 
@@ -245,7 +248,10 @@ export default function Board() {
     }
 
     function handleOnTitleBlur(evt: React.SyntheticEvent) {
-        const target = evt.target;
+        const target = evt.target as typeof evt.target & {
+            contentEditable: boolean;
+            innerText: string;
+        };
         setDrawingTitle(target.innerText);
 
         // console.log("blurrr", target.textContent);
@@ -256,20 +262,22 @@ export default function Board() {
     }
 
     function handleOnTitleKeyDown(evt: React.SyntheticEvent) {
-        const target = evt.target;
-        if (evt.keyCode === 13) {
-            evt.preventDefault();
+        const event = evt as typeof evt & {
+            keyCode: number;
+            target: {
+                contentEditable: boolean;
+                innerText: string;
+                blur: () => void;
+            };
+        };
+        const target = event.target;
+        if (event.keyCode === 13) {
+            event.preventDefault();
             setDrawingTitle(target.innerText);
             target.blur();
             target.contentEditable = false;
             handleOnChange();
         }
-    }
-    function handleOnTitleChange(evt: React.SyntheticEvent) {
-        const target = evt.target;
-
-        setDrawingTitle(target.textContent);
-        console.log("change", target.textContent);
     }
 
     // ----------------------------------------------------------------
@@ -281,8 +289,8 @@ export default function Board() {
     let hideMenu = "hideMenu";
     return (
         <>
-            <header className="h-14 transition-opacity shadow-md fixed z-[3] w-full">
-                <div className="flex px-3 justify-between h-10 items-center pl-16 bg-white">
+            <header className="transition-opacity shadow-md fixed z-[3] w-full">
+                <div className="flex px-3 justify-between h-14 items-center pl-16 bg-white">
                     <h1
                         contentEditable={false}
                         onClick={(evt) => handleOnClickTitle(evt)}
