@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import fetchAPI from "@/utils/graph";
 import delay from "@/utils/delay";
 import { Vivo, GoogleCloud, RgaDraw } from "@/components/logos";
+import { Back } from "@/components/icons";
 
 type ExcalidrawType = React.MemoExoticComponent<any> | null;
 
@@ -280,6 +281,10 @@ export default function Board() {
         }
     }
 
+    function handleBackToGallery() {
+        router.push("/gallery");
+    }
+
     // ----------------------------------------------------------------
 
     if (Excalidraw === null || MainComp.MainMenu === null || !isValidDrawing) {
@@ -290,18 +295,27 @@ export default function Board() {
     return (
         <>
             <header className="transition-opacity shadow-md fixed z-[3] w-full">
-                <div className="flex px-3 justify-between h-14 items-center pl-16 bg-white">
-                    <h1
-                        contentEditable={false}
-                        onClick={(evt) => handleOnClickTitle(evt)}
-                        onBlur={handleOnTitleBlur}
-                        onKeyDown={handleOnTitleKeyDown}
-                        // onChange={handleOnTitleChange}
-                        // onFocus={(evt) => handleClickTitle(evt)}
-                        className="font-bold text-xl p-1"
-                    >
-                        {drawingTitle}
-                    </h1>
+                <div className="flex px-3 justify-between h-14 items-center pl-4 bg-white">
+                    <div className="flex items-center">
+                        <button
+                            className="hover:bg-slate-100 w-9 h-9 flex items-center justify-center"
+                            onClick={handleBackToGallery}
+                        >
+                            <span className="sr-only">Back To Gallery</span>
+                            <Back className="fill-slate-400 hover:fill-slate-700" />
+                        </button>
+                        <h1
+                            contentEditable={false}
+                            onClick={(evt) => handleOnClickTitle(evt)}
+                            onBlur={handleOnTitleBlur}
+                            onKeyDown={handleOnTitleKeyDown}
+                            // onChange={handleOnTitleChange}
+                            // onFocus={(evt) => handleClickTitle(evt)}
+                            className="font-bold text-xl p-1 pl-3"
+                        >
+                            {drawingTitle}
+                        </h1>
+                    </div>
                     <div className="flex content-end gap-7 items-center">
                         <RgaDraw />
                     </div>
