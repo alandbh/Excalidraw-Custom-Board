@@ -277,7 +277,7 @@ export default function Board() {
             setDrawingTitle(target.innerText);
             target.blur();
             target.contentEditable = false;
-            handleOnChange();
+            // handleOnChange();
         }
     }
 
