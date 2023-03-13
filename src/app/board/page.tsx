@@ -317,7 +317,9 @@ export default function Board() {
                         </h1>
                     </div>
                     <div className="flex content-end gap-7 items-center">
-                        <RgaDraw />
+                        <button onClick={handleBackToGallery}>
+                            <RgaDraw />
+                        </button>
                     </div>
                 </div>
                 <div className="flex px-3 justify-between h-14 items-center pl-14 bg-white">
