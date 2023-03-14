@@ -95,11 +95,23 @@ export default function Board() {
         [excalidrawAPI]
     );
 
+    const getCurrentDrawingJson = useCallback(() => {
+        const json = MainComp.serializeAsJSON(
+            excalidrawAPI.getSceneElements(),
+            excalidrawAPI.getAppState(),
+            excalidrawAPI.getFiles(),
+            "local"
+        );
+
+        return json;
+    }, [MainComp, excalidrawAPI]);
+
     const fetchDrawing = useCallback(
         async (
             shouldUpdateVersion: boolean = false,
             loadCurrentScene: boolean = false
         ) => {
+            const currentDrawingJson = getCurrentDrawingJson();
             const data = await fetchAPI(
                 `query MyQuery($id:ID) {
                 drawing(where: {id: $id}) {
@@ -127,7 +139,13 @@ export default function Board() {
                     drawingVersion = data.drawing.updatedAt;
                 }
                 if (loadCurrentScene && excalidrawAPI) {
-                    updateScene(sceneObj);
+                    let mergedJson = JSON.stringify(
+                        Object.assign(
+                            JSON.parse(currentDrawingJson),
+                            JSON.parse(sceneObj)
+                        )
+                    );
+                    updateScene(mergedJson);
                 }
                 return data.drawing;
             }
@@ -174,12 +192,7 @@ export default function Board() {
 
         console.log("ELEMENTS", excalidrawAPI.getAppState());
 
-        const json = MainComp.serializeAsJSON(
-            excalidrawAPI.getSceneElements(),
-            excalidrawAPI.getAppState(),
-            excalidrawAPI.getFiles(),
-            "local"
-        );
+        const json = getCurrentDrawingJson();
 
         doMutate(
             `mutation MyMutation($json: Json, $id: ID, $title: String) {
