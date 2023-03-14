@@ -96,14 +96,15 @@ export default function Board() {
     );
 
     const getCurrentDrawingJson = useCallback(() => {
-        const json = MainComp.serializeAsJSON(
-            excalidrawAPI.getSceneElements(),
-            excalidrawAPI.getAppState(),
-            excalidrawAPI.getFiles(),
-            "local"
-        );
-
-        return json;
+        if (MainComp !== null && MainComp !== undefined) {
+            const json = MainComp?.serializeAsJSON(
+                excalidrawAPI?.getSceneElements(),
+                excalidrawAPI?.getAppState(),
+                excalidrawAPI?.getFiles(),
+                "local"
+            );
+            return json;
+        }
     }, [MainComp, excalidrawAPI]);
 
     const fetchDrawing = useCallback(
@@ -111,7 +112,7 @@ export default function Board() {
             shouldUpdateVersion: boolean = false,
             loadCurrentScene: boolean = false
         ) => {
-            const currentDrawingJson = getCurrentDrawingJson();
+            const currentDrawingJson = await getCurrentDrawingJson();
             const data = await fetchAPI(
                 `query MyQuery($id:ID) {
                 drawing(where: {id: $id}) {
