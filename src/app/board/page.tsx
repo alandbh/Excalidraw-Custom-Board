@@ -374,6 +374,13 @@ export default function Board() {
                         <button onClick={handleBackToGallery}>
                             <RgaDraw />
                         </button>
+                        <LoggedUser
+                            picture={user?.photoURL}
+                            name={user?.displayName?.split(" ")[0] || "Unknown"}
+                            email={user?.email || "Unknown"}
+                            size={40}
+                            auth={auth}
+                        />
                     </div>
                 </div>
                 <div className="flex px-3 justify-between h-14 items-center pl-14 bg-white">
