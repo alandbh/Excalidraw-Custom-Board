@@ -56,7 +56,7 @@ const initialData = {
 export default function Board() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const drawindId = searchParams.get("id");
+    const drawindId: string = searchParams.get("id") || "";
     // console.log(searchParams.get("id"));
 
     // const { id } = router.query || "";
@@ -246,6 +246,26 @@ export default function Board() {
         });
     }
 
+    function saveNewTitle(id: string, title: string) {
+        doMutate(
+            `mutation MyMutation($id: ID, $title: String) {
+            updateDrawing(
+              where: {id: $id}
+              data: {title: $title}
+            ) {
+              id
+              title
+            }
+          }`,
+            {
+                variables: {
+                    id,
+                    title,
+                },
+            }
+        );
+    }
+
     /**
      *
      * On Click on the Title
@@ -271,7 +291,8 @@ export default function Board() {
 
         // console.log("blurrr", target.textContent);
         // console.log("blurrr state", drawingTitle);
-        delay(handleOnChange, 500);
+        // delay(handleOnChange, 500);
+        saveNewTitle(drawindId, target.innerText);
 
         target.contentEditable = false;
     }
@@ -289,9 +310,10 @@ export default function Board() {
         if (event.keyCode === 13) {
             event.preventDefault();
             setDrawingTitle(target.innerText);
-            target.blur();
             target.contentEditable = false;
+
             // handleOnChange();
+            target.blur();
         }
     }
 
