@@ -1,5 +1,10 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../../utils/firebase";
+import LoggedUser from "@/components/LoggedUser";
+import { isUserAuthorized } from "@/utils/isUserAllowed";
+
 import { useRouter, useSearchParams } from "next/navigation";
 
 import fetchAPI from "@/utils/graph";
@@ -54,6 +59,7 @@ const initialData = {
 };
 
 export default function Board() {
+    const [user, loadingUser] = useAuthState(auth);
     const router = useRouter();
     const searchParams = useSearchParams();
     const drawindId: string = searchParams.get("id") || "";
@@ -328,6 +334,18 @@ export default function Board() {
     }
 
     let hideMenu = "hideMenu";
+
+    if (typeof window !== "undefined") {
+        if (!user && !loadingUser) {
+            router.push("/login");
+            // return;
+        }
+    }
+
+    if (!user) {
+        // router.push("/login");
+        return null;
+    }
     return (
         <>
             <header className="transition-opacity shadow-md fixed z-[3] w-full">

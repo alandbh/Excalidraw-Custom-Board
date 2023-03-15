@@ -1,10 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../../utils/firebase";
+import LoggedUser from "@/components/LoggedUser";
+import { isUserAuthorized } from "@/utils/isUserAllowed";
 import { useRouter } from "next/navigation";
 import { RgaDraw } from "@/components/logos";
 import Link from "next/link";
 import fetchAPI from "@/utils/graph";
-import { Button } from "@excalidraw/excalidraw";
 
 type drawingType = {
     title: string;
@@ -19,6 +22,8 @@ let router;
 
 export default function Gallery() {
     router = useRouter();
+    const [user, loadingUser] = useAuthState(auth);
+
     const [allDrawings, setAllDrawings] = useState<allDrawingsType | null>(
         null
     );
@@ -35,6 +40,18 @@ export default function Gallery() {
         });
     }, []);
 
+    if (typeof window !== "undefined") {
+        if (!user && !loadingUser) {
+            router.push("/login");
+            // return;
+        }
+    }
+
+    if (!user) {
+        // router.push("/login");
+        return null;
+    }
+
     // console.log("allDrawingsData", allDrawingsData);
 
     return (
@@ -44,27 +61,42 @@ export default function Gallery() {
                     <RgaDraw style={{ width: 320, height: 60 }} />
                     {/* <h1 className="text-2xl text-gray-400">Welcome</h1> */}
                 </div>
-                <div>
+                <div className="flex items-center gap-4">
                     <button
                         onClick={handleOnClickAddNew}
                         className="border border-blue-500 px-6 py-3 text-blue-500 hover:bg-blue-500/10"
                     >
                         Add New
                     </button>
+
+                    <LoggedUser
+                        picture={user?.photoURL}
+                        name={user?.displayName?.split(" ")[0] || "Unknown"}
+                        email={user?.email || "Unknown"}
+                        size={40}
+                        auth={auth}
+                    />
                 </div>
             </header>
             <main className="p-8 flex flex-col">
-                <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5  gap-4 max-w-[1144px] self-center">
-                    {allDrawings?.drawings.map((drawing) => (
-                        <Link
-                            key={drawing.id}
-                            className="border border-blue-500 px-6 py-3 text-blue-500 hover:bg-blue-500/10"
-                            href={`/board?id=${drawing.id}`}
-                        >
-                            {drawing.title}
-                        </Link>
-                    ))}
-                </div>
+                {isUserAuthorized(user.email) ? (
+                    <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5  gap-4 max-w-[1144px] self-center">
+                        {allDrawings?.drawings.map((drawing) => (
+                            <Link
+                                key={drawing.id}
+                                className="border border-blue-500 px-6 py-3 text-blue-500 hover:bg-blue-500/10"
+                                href={`/board?id=${drawing.id}`}
+                            >
+                                {drawing.title}
+                            </Link>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-center m-20">
+                        Sorry. Currently this app is only for R/GA&lsquo;s
+                        fellows
+                    </p>
+                )}
 
                 {/* <div>
                     <h1 className="text-2xl text-gray-400 mb-8">New Drawing</h1>
