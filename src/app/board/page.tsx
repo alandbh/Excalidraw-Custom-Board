@@ -11,6 +11,7 @@ import fetchAPI from "@/utils/graph";
 import delay from "@/utils/delay";
 import { Vivo, GoogleCloud, RgaDraw } from "@/components/logos";
 import { Back } from "@/components/icons";
+import Head from "../head";
 
 type ExcalidrawType = React.MemoExoticComponent<any> | null;
 
@@ -348,16 +349,7 @@ export default function Board() {
     }
     return (
         <>
-            {drawingTitle !== null && (
-                <head>
-                    <title>{`R/DRAW :: ${drawingTitle}`}</title>
-                    <meta
-                        property="og:title"
-                        content={`R/DRAW :: ${drawingTitle}`}
-                        key="title"
-                    />
-                </head>
-            )}
+            {drawingTitle !== null && <Head title={drawingTitle} />}
             <header className="transition-opacity shadow-md fixed z-[3] w-full">
                 <div className="flex px-3 justify-between h-14 items-center pl-4 bg-white">
                     <div className="flex items-center">
