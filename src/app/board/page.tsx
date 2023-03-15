@@ -70,7 +70,7 @@ export default function Board() {
     const [MainComp, setMainComp] = useState<any>(null);
     const [excalidrawAPI, setExcalidrawAPI] = useState<any>();
     const [isValidDrawing, setIsValidDrawing] = useState<boolean>(false);
-    const [drawingTitle, setDrawingTitle] = useState<string>("");
+    const [drawingTitle, setDrawingTitle] = useState<string | null>(null);
 
     useEffect(() => {
         import("@excalidraw/excalidraw").then((comp) => {
@@ -348,6 +348,16 @@ export default function Board() {
     }
     return (
         <>
+            {drawingTitle !== null && (
+                <head>
+                    <title>{`R/DRAW :: ${drawingTitle}`}</title>
+                    <meta
+                        property="og:title"
+                        content={`R/DRAW :: ${drawingTitle}`}
+                        key="title"
+                    />
+                </head>
+            )}
             <header className="transition-opacity shadow-md fixed z-[3] w-full">
                 <div className="flex px-3 justify-between h-14 items-center pl-4 bg-white">
                     <div className="flex items-center">
@@ -403,6 +413,7 @@ export default function Board() {
                     </div> */}
                 </div>
             </header>
+
             <div style={{ height: "calc(100vh - 0px)" }} className={hideMenu}>
                 <Excalidraw
                     ref={(api: any) => setExcalidrawAPI(api)}
