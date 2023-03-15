@@ -41,8 +41,8 @@ export default function Gallery() {
         <>
             <header className="flex justify-between p-8">
                 <div className="flex">
-                    <RgaDraw style={{ width: 150, height: 50 }} />
-                    <h1 className="text-2xl text-gray-400">Welcome</h1>
+                    <RgaDraw style={{ width: 320, height: 60 }} />
+                    {/* <h1 className="text-2xl text-gray-400">Welcome</h1> */}
                 </div>
                 <div>
                     <button
