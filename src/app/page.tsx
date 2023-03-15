@@ -11,9 +11,9 @@ export default function Home() {
                 </div>
                 <Link
                     className="border border-blue-500 px-6 py-3 text-blue-500 hover:bg-blue-500/10"
-                    href="/board"
+                    href="/gallery"
                 >
-                    Go To The Board
+                    GET STARTED
                 </Link>
             </div>
         </main>
