@@ -338,7 +338,7 @@ export default function Board() {
 
     if (typeof window !== "undefined") {
         if (!user && !loadingUser) {
-            router.push("/login?redirect=" + drawindId);
+            router.push("/login?redirect=" + searchParams.get("id"));
             // return;
         }
     }
