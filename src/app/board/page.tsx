@@ -10,7 +10,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import fetchAPI from "@/utils/graph";
 import delay from "@/utils/delay";
 import { Vivo, GoogleCloud, RgaDraw } from "@/components/logos";
-import { Back } from "@/components/icons";
+import { Back, Trash } from "@/components/icons";
 import Head from "../head";
 
 type ExcalidrawType = React.MemoExoticComponent<any> | null;
@@ -58,6 +58,35 @@ const initialData = {
     appState: { viewBackgroundColor: "#ff0000" },
     scrollToContent: true,
 };
+
+function doMutate(gqlString: string, variables: { variables: {} }) {
+    fetchAPI(gqlString, variables).then((data) => {
+        console.log("json", data.updateDrawing.id);
+        doPublish(data.updateDrawing.id);
+    });
+}
+
+function doPublish(id: string) {
+    fetchAPI(
+        `mutation PublishDrawing($id: ID) {
+        publishDrawing(
+          where: {id: $id}
+        ) {
+          id
+          title
+          updatedAt
+        }
+      }`,
+        {
+            variables: {
+                id,
+            },
+        }
+    ).then((data) => {
+        console.log("json saved", data);
+        drawingVersion = data.publishDrawing.updatedAt;
+    });
+}
 
 export default function Board() {
     const [user, loadingUser] = useAuthState(auth);
@@ -222,35 +251,6 @@ export default function Board() {
         );
 
         // console.log("json", json);
-    }
-
-    function doMutate(gqlString: string, variables: { variables: {} }) {
-        fetchAPI(gqlString, variables).then((data) => {
-            console.log("json", data.updateDrawing.id);
-            doPublish(data.updateDrawing.id);
-        });
-    }
-
-    function doPublish(id: string) {
-        fetchAPI(
-            `mutation PublishDrawing($id: ID) {
-            publishDrawing(
-              where: {id: $id}
-            ) {
-              id
-              title
-              updatedAt
-            }
-          }`,
-            {
-                variables: {
-                    id,
-                },
-            }
-        ).then((data) => {
-            console.log("json saved", data);
-            drawingVersion = data.publishDrawing.updatedAt;
-        });
     }
 
     function saveNewTitle(id: string, title: string) {
@@ -428,6 +428,7 @@ export default function Board() {
                         <MenuItems
                             isVisible={true}
                             parent={MainComp.MainMenu}
+                            drawingId={drawindId}
                         />
                     </MainComp.MainMenu>
                 </Excalidraw>
@@ -450,11 +451,25 @@ type MenuProps = {
             ChangeCanvasBackground: React.FC;
             Help: React.FC;
         };
+        Item: React.FC<any>;
     };
+    drawingId: string;
 };
 
-function MenuItems({ isVisible, parent }: MenuProps) {
+function MenuItems({ isVisible, parent, drawingId }: MenuProps) {
     const MainMenu = parent;
+
+    function handleOnClickDelete() {
+        if (
+            confirm(
+                "This drawing is about to be deleted. Are you shure?" +
+                    drawingId
+            ) === true
+        ) {
+            deleteDrawing(drawingId);
+            window.location.href = "/gallery";
+        }
+    }
     if (isVisible && MainMenu) {
         return (
             <>
@@ -466,6 +481,13 @@ function MenuItems({ isVisible, parent }: MenuProps) {
                 <hr />
                 <MainMenu.DefaultItems.ChangeCanvasBackground />
                 <hr style={{ marginTop: 20 }} />
+                <MainMenu.Item onSelect={() => handleOnClickDelete()}>
+                    <div className="flex gap-3 absolute items-center -ml-2 -mt-[10px] text-red-500 ">
+                        <Trash />
+                        <span>Delete Drawing</span>
+                    </div>
+                </MainMenu.Item>
+                <hr style={{ marginTop: 20 }} />
                 <MainMenu.DefaultItems.Help />
             </>
         );
@@ -473,3 +495,37 @@ function MenuItems({ isVisible, parent }: MenuProps) {
         return null;
     }
 }
+
+async function deleteDrawing(id: string) {
+    // doMutate(
+    //     `mutation deleteOneDrawing($id: ID) {
+    //         deleteDrawing(where: {id: $id}) {
+    //           id
+    //         }
+    //       }`,
+    //     {
+    //         variables: {
+    //             id,
+    //         },
+    //     }
+    // );
+
+    return await fetchAPI(
+        `mutation deleteOneDrawing($id: ID) {
+            deleteDrawing(where: {id: $id}) {
+                id
+            }
+        }`,
+        {
+            variables: {
+                id,
+            },
+        }
+    );
+}
+// function doMutate(gqlString: string, variables: { variables: {} }) {
+//     fetchAPI(gqlString, variables).then((data) => {
+//         console.log("json", data.updateDrawing.id);
+//         doPublish(data.updateDrawing.id);
+//     });
+// }

@@ -20,3 +20,20 @@ export function Back(props: fillProps) {
         </svg>
     );
 }
+
+export function Trash() {
+    return (
+        <svg
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            viewBox="0 0 20 20"
+        >
+            <path
+                strokeWidth="1.25"
+                d="M3.333 5.833h13.334M8.333 9.167v5m3.334-5v5m-7.5-8.334l.833 10c0 .92.746 1.667 1.667 1.667h6.666c.92 0 1.667-.746 1.667-1.667l.833-10m-8.333 0v-2.5c0-.46.373-.833.833-.833h3.334c.46 0 .833.373.833.833v2.5"
+            ></path>
+        </svg>
+    );
+}

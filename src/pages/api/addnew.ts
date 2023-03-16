@@ -20,7 +20,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
     // Sends a HTTP success code
     
 
-    const newSceneObject = {
+    const newSceneObject = `{
       "type": "excalidraw",
       "version": 2,
       "source": "http://localhost:3000",
@@ -33,7 +33,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
       "files": {
         
       }
-    }
+    }`
 
     const createdId = await doCreate(
       `mutation CreateDrawing($title: String!, $sceneObject: Json) {
