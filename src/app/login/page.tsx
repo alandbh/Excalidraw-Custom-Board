@@ -10,6 +10,8 @@ function Login() {
     const googleProvider = new GoogleAuthProvider();
     const [user, loading] = useAuthState(auth);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const drawindId: string = searchParams.get("redirect") || "none";
 
     const googleLogin = async () => {
         try {
@@ -27,7 +29,11 @@ function Login() {
 
     if (user) {
         console.log("user", user);
-        router.push("/gallery");
+        if (drawindId === "none") {
+            router.push("/gallery");
+        } else {
+            router.push("/board?id=" + drawindId);
+        }
     }
 
     return (
