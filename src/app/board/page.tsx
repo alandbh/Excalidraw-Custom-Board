@@ -337,8 +337,11 @@ export default function Board() {
     let hideMenu = "hideMenu";
 
     if (typeof window !== "undefined") {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+
         if (!user && !loadingUser) {
-            router.push("/login?redirect=" + searchParams.get("id"));
+            router.push("/login?redirect=" + urlParams.get("id"));
             // return;
         }
     }
