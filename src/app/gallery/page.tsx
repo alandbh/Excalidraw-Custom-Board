@@ -61,22 +61,24 @@ export default function Gallery() {
                     <RgaDraw style={{ width: 320, height: 60 }} />
                     {/* <h1 className="text-2xl text-gray-400">Welcome</h1> */}
                 </div>
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={handleOnClickAddNew}
-                        className="border border-blue-500 px-6 py-3 text-blue-500 hover:bg-blue-500/10"
-                    >
-                        Add New
-                    </button>
+                {isUserAuthorized(user.email) && (
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={handleOnClickAddNew}
+                            className="border border-blue-500 px-6 py-3 text-blue-500 hover:bg-blue-500/10"
+                        >
+                            Add New
+                        </button>
 
-                    <LoggedUser
-                        picture={user?.photoURL}
-                        name={user?.displayName?.split(" ")[0] || "Unknown"}
-                        email={user?.email || "Unknown"}
-                        size={40}
-                        auth={auth}
-                    />
-                </div>
+                        <LoggedUser
+                            picture={user?.photoURL}
+                            name={user?.displayName?.split(" ")[0] || "Unknown"}
+                            email={user?.email || "Unknown"}
+                            size={40}
+                            auth={auth}
+                        />
+                    </div>
+                )}
             </header>
             <main className="p-8 flex flex-col">
                 {isUserAuthorized(user.email) ? (

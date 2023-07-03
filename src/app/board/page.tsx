@@ -350,6 +350,14 @@ export default function Board() {
         // router.push("/login");
         return null;
     }
+
+    if (!isUserAuthorized(user.email)) {
+        return (
+            <p className="text-center m-20">
+                Sorry. Currently this app is only for R/GA&lsquo;s fellows
+            </p>
+        );
+    }
     return (
         <>
             {drawingTitle !== null && <Head title={drawingTitle} />}
@@ -459,15 +467,16 @@ type MenuProps = {
 function MenuItems({ isVisible, parent, drawingId }: MenuProps) {
     const MainMenu = parent;
 
-    function handleOnClickDelete() {
+    async function handleOnClickDelete() {
         if (
             confirm(
                 "This drawing is about to be deleted. Are you shure?" +
                     drawingId
             ) === true
         ) {
-            deleteDrawing(drawingId);
-            window.location.href = "/gallery";
+            deleteDrawing(drawingId).then((response) => {
+                window.location.href = "/gallery";
+            });
         }
     }
     if (isVisible && MainMenu) {
