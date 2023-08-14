@@ -213,7 +213,7 @@ export default function Board() {
      */
     function handleOnChange() {
         // Under the limit of 5 reqs per second
-        delay(saveToBackend, 500);
+        delay(saveToBackend, 1000);
     }
 
     async function saveToBackend() {
